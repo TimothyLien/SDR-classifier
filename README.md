@@ -10,9 +10,7 @@ The pipeline consists of three stages:
 3. **Inference:** A PyTorch-based Deep Learning model deployed via `LibTorch` (C++) for modulation classification.
 
 ## Current Status
-* **[In Progress]** Phase 1: Signal Generation & IQ Math Validation.
-* **[Planned]** Phase 2: Hardware integration (RTL-SDR).
-* **[Planned]** Phase 3: CNN Integration via LibTorch.
+WIP
 
 ## Build Instructions
 ```bash
