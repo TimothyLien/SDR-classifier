@@ -1,32 +1,23 @@
 #include <iostream>
 #include <vector>
-#include <complex> // The standard C++ complex number library
+#include <complex>
 #include <cmath>
-#include <fstream> // For writing to files
+#include <fstream>
 
-// Constants
 const double PI = 3.14159265358979323846;
 
 int main() {
-    std::cout << "[*] Starting Signal Generator..." << std::endl;
-
-    // Simulation Parameters
-    const int sample_rate = 1000;  // 1000 samples per second
-    const int duration_sec = 1;    // 1 second of data
+    const int sample_rate = 1000;
+    const int duration_sec = 1;
     const int num_samples = sample_rate * duration_sec;
-    const double frequency = 10.0; // 10 Hz tone
+    const double frequency = 10.0;
 
-    // The Buffer: A vector of complex floats (Standard for SDR)
     std::vector<std::complex<float>> signal_buffer;
     signal_buffer.reserve(num_samples);
 
-    // Generate the Signal (Euler's Formula: e^(j*2*pi*f*t))
     for (int i = 0; i < num_samples; ++i) {
-        double t = (double)i / sample_rate; // Current time
+        double t = (double)i / sample_rate;
         
-        // IQ Math: 
-        // Real part (I) = cos(2*pi*f*t)
-        // Imag part (Q) = sin(2*pi*f*t)
         double angle = 2.0 * PI * frequency * t;
         
         std::complex<float> sample(cos(angle), sin(angle));
@@ -35,9 +26,8 @@ int main() {
 
     std::cout << "[+] Generated " << signal_buffer.size() << " IQ samples." << std::endl;
 
-    // Save to CSV so we can check our work in Python later
     std::ofstream outfile("signal_data.csv");
-    outfile << "I,Q\n"; // Header
+    outfile << "I,Q\n";
     for (const auto& s : signal_buffer) {
         outfile << s.real() << "," << s.imag() << "\n";
     }
