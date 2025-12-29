@@ -1,20 +1,26 @@
 cmake_minimum_required(VERSION 3.10)
-project(SDR_Project)
+project(SDR_Pro)
 
 set(CMAKE_CXX_STANDARD 17)
 
 set(HOMEBREW_PREFIX "/opt/homebrew")
-include_directories(${HOMEBREW_PREFIX}/include)
-link_directories(${HOMEBREW_PREFIX}/lib)
+list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_PREFIX}")
+
+find_package(absl CONFIG REQUIRED)
+
+find_package(Protobuf CONFIG REQUIRED)
 
 find_library(FFTW3_LIB NAMES fftw3 PATHS ${HOMEBREW_PREFIX}/lib)
-
-if(NOT FFTW3_LIB)
-    message(FATAL_ERROR "Could not find fftw3!")
-endif()
+find_library(ZMQ_LIB NAMES zmq PATHS ${HOMEBREW_PREFIX}/lib)
 
 include_directories(include)
 
-add_executable(SDR_App src/main.cpp)
+add_executable(SDR_App src/main.cpp src/message.pb.cc)
 
-target_link_libraries(SDR_App PRIVATE ${FFTW3_LIB})
+target_link_libraries(SDR_App 
+    PRIVATE 
+    ${FFTW3_LIB} 
+    ${ZMQ_LIB} 
+    protobuf::libprotobuf
+    absl::base
+)

@@ -5,7 +5,9 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <zmq.h>
 #include "safe_queue.h"
+#include <message.pb.h>
 #include <fftw3.h>
 
 // Type Alias: A "Chunk" of IQ data
@@ -46,8 +48,15 @@ void radio_producer() {
 
 // Consumer Thread: Processes IQ Data
 void dsp_consumer() {
-    std::cout << "[Consumer] Started. Waiting for data..." << std::endl;
-    IQBlock block;
+    std::cout << "[Consumer] Connecting to Nerwork (Port 5555)..." << std::endl;
+    
+    void* context = zmq_ctx_new();
+    void* publisher = zmq_socket(context, ZMQ_PUB);
+    int rc = zmq_bind(publisher, "tcp://*:5555"); // Bind to port 5555
+    if (rc != 0) {
+        std::cerr << "[Consumer] Failed to bind to port 5555." << std::endl;
+        return;
+    }
 
     int N = 1024;
     fftw_complex* in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
@@ -55,6 +64,7 @@ void dsp_consumer() {
     fftw_plan plan = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
 
     while (running) {
+        IQBlock block;
         q.pop(block);
 
         for(int i=0; i<N; i++) {
@@ -69,6 +79,18 @@ void dsp_consumer() {
              double mag = sqrt(out[i][0]*out[i][0] + out[i][1]*out[i][1]);
              if(mag > max_mag) { max_mag = mag; peak_bin = i; }
         }
+        
+        radio::SignalResult result;
+        result.set_timestamp(time(NULL));
+        result.set_peak_bin_index(peak_bin);
+        result.set_signal_strength(max_mag);
+        result.set_center_frequency(1000.0); // Dummy value
+        result.set_modulation("TEST_TONE");
+
+        std::string payload;
+        result.SerializeToString(&payload);
+
+        zmq_send(publisher, payload.data(), payload.size(), 0);
 
         static int print_count = 0;
         if (print_count++ % 50 == 0) {
@@ -78,18 +100,20 @@ void dsp_consumer() {
     }
 
     // Cleanup
+    zmq_close(publisher);
+    zmq_ctx_destroy(context);
     fftw_destroy_plan(plan);
     fftw_free(in); fftw_free(out);
     std::cout << "[Consumer] Stopped." << std::endl;
 }
 
 int main() {
-    std::cout << "[Main] Starting Multi-threaded SDR..." << std::endl;
+    std::cout << "[Main] Starting SDR..." << std::endl;
 
     std::thread t1(radio_producer);
     std::thread t2(dsp_consumer);
 
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
     std::cout << "[Main] Shutting down..." << std::endl;
     running = false;
