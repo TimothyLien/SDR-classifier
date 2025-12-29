@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package radio;
+
+message SignalResult {
+    uint64 timestamp = 1;       // When did we receive this?
+    float center_frequency = 2; // What frequency are we tuned to?
+    int32 peak_bin_index = 3;   // What bin had the signal?
+    float signal_strength = 4;  // Magnitude of the peak
+    string modulation = 5;      // (Future) "FM", "LTE", "Unknown"
+}
