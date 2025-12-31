@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\x12\x05radio\"\x80\x01\n\x0cSignalResult\x12\x11\n\ttimestamp\x18\x01 \x01(\x04\x12\x18\n\x10\x63\x65nter_frequency\x18\x02 \x01(\x02\x12\x16\n\x0epeak_bin_index\x18\x03 \x01(\x05\x12\x17\n\x0fsignal_strength\x18\x04 \x01(\x02\x12\x12\n\nmodulation\x18\x05 \x01(\tb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rmessage.proto\x12\x05radio\"\x97\x01\n\x0cSignalResult\x12\x11\n\ttimestamp\x18\x01 \x01(\x04\x12\x18\n\x10\x63\x65nter_frequency\x18\x02 \x01(\x02\x12\x16\n\x0epeak_bin_index\x18\x03 \x01(\x05\x12\x17\n\x0fsignal_strength\x18\x04 \x01(\x02\x12\x12\n\nmodulation\x18\x05 \x01(\t\x12\x15\n\rspectrum_data\x18\x06 \x03(\x02\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,5 +32,5 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'message_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_SIGNALRESULT']._serialized_start=25
-  _globals['_SIGNALRESULT']._serialized_end=153
+  _globals['_SIGNALRESULT']._serialized_end=176
 # @@protoc_insertion_point(module_scope)

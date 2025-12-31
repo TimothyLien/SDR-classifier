@@ -212,12 +212,31 @@ class SignalResult final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
+    kSpectrumDataFieldNumber = 6,
     kModulationFieldNumber = 5,
     kTimestampFieldNumber = 1,
     kCenterFrequencyFieldNumber = 2,
     kPeakBinIndexFieldNumber = 3,
     kSignalStrengthFieldNumber = 4,
   };
+  // repeated float spectrum_data = 6;
+  int spectrum_data_size() const;
+  private:
+  int _internal_spectrum_data_size() const;
+
+  public:
+  void clear_spectrum_data() ;
+  float spectrum_data(int index) const;
+  void set_spectrum_data(int index, float value);
+  void add_spectrum_data(float value);
+  const ::google::protobuf::RepeatedField<float>& spectrum_data() const;
+  ::google::protobuf::RepeatedField<float>* PROTOBUF_NONNULL mutable_spectrum_data();
+
+  private:
+  const ::google::protobuf::RepeatedField<float>& _internal_spectrum_data() const;
+  ::google::protobuf::RepeatedField<float>* PROTOBUF_NONNULL _internal_mutable_spectrum_data();
+
+  public:
   // string modulation = 5;
   void clear_modulation() ;
   const ::std::string& modulation() const;
@@ -277,7 +296,7 @@ class SignalResult final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 5,
+  static const ::google::protobuf::internal::TcParseTable<3, 6,
                                    0, 37,
                                    2>
       _table_;
@@ -299,6 +318,7 @@ class SignalResult final : public ::google::protobuf::Message
         const SignalResult& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedField<float> spectrum_data_;
     ::google::protobuf::internal::ArenaStringPtr modulation_;
     ::uint64_t timestamp_;
     float center_frequency_;
@@ -333,7 +353,7 @@ inline void SignalResult::clear_timestamp() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.timestamp_ = ::uint64_t{0u};
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+                  0x00000004U);
 }
 inline ::uint64_t SignalResult::timestamp() const {
   // @@protoc_insertion_point(field_get:radio.SignalResult.timestamp)
@@ -341,7 +361,7 @@ inline ::uint64_t SignalResult::timestamp() const {
 }
 inline void SignalResult::set_timestamp(::uint64_t value) {
   _internal_set_timestamp(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:radio.SignalResult.timestamp)
 }
 inline ::uint64_t SignalResult::_internal_timestamp() const {
@@ -358,7 +378,7 @@ inline void SignalResult::clear_center_frequency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.center_frequency_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+                  0x00000008U);
 }
 inline float SignalResult::center_frequency() const {
   // @@protoc_insertion_point(field_get:radio.SignalResult.center_frequency)
@@ -366,7 +386,7 @@ inline float SignalResult::center_frequency() const {
 }
 inline void SignalResult::set_center_frequency(float value) {
   _internal_set_center_frequency(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_set:radio.SignalResult.center_frequency)
 }
 inline float SignalResult::_internal_center_frequency() const {
@@ -383,7 +403,7 @@ inline void SignalResult::clear_peak_bin_index() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.peak_bin_index_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+                  0x00000010U);
 }
 inline ::int32_t SignalResult::peak_bin_index() const {
   // @@protoc_insertion_point(field_get:radio.SignalResult.peak_bin_index)
@@ -391,7 +411,7 @@ inline ::int32_t SignalResult::peak_bin_index() const {
 }
 inline void SignalResult::set_peak_bin_index(::int32_t value) {
   _internal_set_peak_bin_index(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_set:radio.SignalResult.peak_bin_index)
 }
 inline ::int32_t SignalResult::_internal_peak_bin_index() const {
@@ -408,7 +428,7 @@ inline void SignalResult::clear_signal_strength() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.signal_strength_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000010U);
+                  0x00000020U);
 }
 inline float SignalResult::signal_strength() const {
   // @@protoc_insertion_point(field_get:radio.SignalResult.signal_strength)
@@ -416,7 +436,7 @@ inline float SignalResult::signal_strength() const {
 }
 inline void SignalResult::set_signal_strength(float value) {
   _internal_set_signal_strength(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000020U);
   // @@protoc_insertion_point(field_set:radio.SignalResult.signal_strength)
 }
 inline float SignalResult::_internal_signal_strength() const {
@@ -433,7 +453,7 @@ inline void SignalResult::clear_modulation() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.modulation_.ClearToEmpty();
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000001U);
+                  0x00000002U);
 }
 inline const ::std::string& SignalResult::modulation() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -443,13 +463,13 @@ inline const ::std::string& SignalResult::modulation() const
 template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void SignalResult::set_modulation(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.modulation_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:radio.SignalResult.modulation)
 }
 inline ::std::string* PROTOBUF_NONNULL SignalResult::mutable_modulation()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_modulation();
   // @@protoc_insertion_point(field_mutable:radio.SignalResult.modulation)
   return _s;
@@ -469,10 +489,10 @@ inline ::std::string* PROTOBUF_NONNULL SignalResult::_internal_mutable_modulatio
 inline ::std::string* PROTOBUF_NULLABLE SignalResult::release_modulation() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:radio.SignalResult.modulation)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
     return nullptr;
   }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   auto* released = _impl_.modulation_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
     _impl_.modulation_.Set("", GetArena());
@@ -482,15 +502,65 @@ inline ::std::string* PROTOBUF_NULLABLE SignalResult::release_modulation() {
 inline void SignalResult::set_allocated_modulation(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
   _impl_.modulation_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.modulation_.IsDefault()) {
     _impl_.modulation_.Set("", GetArena());
   }
   // @@protoc_insertion_point(field_set_allocated:radio.SignalResult.modulation)
+}
+
+// repeated float spectrum_data = 6;
+inline int SignalResult::_internal_spectrum_data_size() const {
+  return _internal_spectrum_data().size();
+}
+inline int SignalResult::spectrum_data_size() const {
+  return _internal_spectrum_data_size();
+}
+inline void SignalResult::clear_spectrum_data() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.spectrum_data_.Clear();
+  ClearHasBitForRepeated(_impl_._has_bits_[0],
+                  0x00000001U);
+}
+inline float SignalResult::spectrum_data(int index) const {
+  // @@protoc_insertion_point(field_get:radio.SignalResult.spectrum_data)
+  return _internal_spectrum_data().Get(index);
+}
+inline void SignalResult::set_spectrum_data(int index, float value) {
+  _internal_mutable_spectrum_data()->Set(index, value);
+  // @@protoc_insertion_point(field_set:radio.SignalResult.spectrum_data)
+}
+inline void SignalResult::add_spectrum_data(float value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _internal_mutable_spectrum_data()->Add(value);
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_add:radio.SignalResult.spectrum_data)
+}
+inline const ::google::protobuf::RepeatedField<float>& SignalResult::spectrum_data() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_list:radio.SignalResult.spectrum_data)
+  return _internal_spectrum_data();
+}
+inline ::google::protobuf::RepeatedField<float>* PROTOBUF_NONNULL SignalResult::mutable_spectrum_data()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
+  // @@protoc_insertion_point(field_mutable_list:radio.SignalResult.spectrum_data)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _internal_mutable_spectrum_data();
+}
+inline const ::google::protobuf::RepeatedField<float>&
+SignalResult::_internal_spectrum_data() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.spectrum_data_;
+}
+inline ::google::protobuf::RepeatedField<float>* PROTOBUF_NONNULL
+SignalResult::_internal_mutable_spectrum_data() {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return &_impl_.spectrum_data_;
 }
 
 #ifdef __GNUC__

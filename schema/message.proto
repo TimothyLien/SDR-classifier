@@ -8,4 +8,5 @@ message SignalResult {
     int32 peak_bin_index = 3;   // What bin had the signal?
     float signal_strength = 4;  // Magnitude of the peak
     string modulation = 5;      // (Future) "FM", "LTE", "Unknown"
+    repeated float spectrum_data = 6;
 }

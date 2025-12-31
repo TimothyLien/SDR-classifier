@@ -29,6 +29,7 @@ namespace radio {
 inline constexpr SignalResult::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
+        spectrum_data_{},
         modulation_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
@@ -66,16 +67,18 @@ const ::uint32_t
         protodesc_cold) = {
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::radio::SignalResult, _impl_._has_bits_),
-        8, // hasbit index offset
+        9, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::radio::SignalResult, _impl_.timestamp_),
         PROTOBUF_FIELD_OFFSET(::radio::SignalResult, _impl_.center_frequency_),
         PROTOBUF_FIELD_OFFSET(::radio::SignalResult, _impl_.peak_bin_index_),
         PROTOBUF_FIELD_OFFSET(::radio::SignalResult, _impl_.signal_strength_),
         PROTOBUF_FIELD_OFFSET(::radio::SignalResult, _impl_.modulation_),
-        1,
+        PROTOBUF_FIELD_OFFSET(::radio::SignalResult, _impl_.spectrum_data_),
         2,
         3,
         4,
+        5,
+        1,
         0,
 };
 
@@ -88,17 +91,17 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
 };
 const char descriptor_table_protodef_message_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
-    "\n\rmessage.proto\022\005radio\"\200\001\n\014SignalResult\022"
+    "\n\rmessage.proto\022\005radio\"\227\001\n\014SignalResult\022"
     "\021\n\ttimestamp\030\001 \001(\004\022\030\n\020center_frequency\030\002"
     " \001(\002\022\026\n\016peak_bin_index\030\003 \001(\005\022\027\n\017signal_s"
-    "trength\030\004 \001(\002\022\022\n\nmodulation\030\005 \001(\tb\006proto"
-    "3"
+    "trength\030\004 \001(\002\022\022\n\nmodulation\030\005 \001(\t\022\025\n\rspe"
+    "ctrum_data\030\006 \003(\002b\006proto3"
 };
 static ::absl::once_flag descriptor_table_message_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_message_2eproto = {
     false,
     false,
-    161,
+    184,
     descriptor_table_protodef_message_2eproto,
     "message.proto",
     &descriptor_table_message_2eproto_once,
@@ -137,6 +140,7 @@ PROTOBUF_NDEBUG_INLINE SignalResult::Impl_::Impl_(
     [[maybe_unused]] const ::radio::SignalResult& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
+        spectrum_data_{visibility, arena, from.spectrum_data_},
         modulation_(arena, from.modulation_) {}
 
 SignalResult::SignalResult(
@@ -166,6 +170,7 @@ PROTOBUF_NDEBUG_INLINE SignalResult::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
+        spectrum_data_{visibility, arena},
         modulation_(arena) {}
 
 inline void SignalResult::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
@@ -198,8 +203,20 @@ inline void* PROTOBUF_NONNULL SignalResult::PlacementNew_(
   return ::new (mem) SignalResult(arena);
 }
 constexpr auto SignalResult::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(SignalResult),
-                                            alignof(SignalResult));
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.spectrum_data_) +
+          decltype(SignalResult::_impl_.spectrum_data_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(SignalResult), alignof(SignalResult), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&SignalResult::PlacementNew_,
+                                 sizeof(SignalResult),
+                                 alignof(SignalResult));
+  }
 }
 constexpr auto SignalResult::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
@@ -235,16 +252,16 @@ SignalResult::GetClassData() const {
   return SignalResult_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 5, 0, 37, 2>
+const ::_pbi::TcParseTable<3, 6, 0, 37, 2>
 SignalResult::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(SignalResult, _impl_._has_bits_),
     0, // no _extensions_
-    5, 56,  // max_field_number, fast_idx_mask
+    6, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294967264,  // skipmap
+    4294967232,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    5,  // num_field_entries
+    6,  // num_field_entries
     0,  // num_aux_entries
     offsetof(decltype(_table_), field_names),  // no aux_entries
     SignalResult_class_data_.base(),
@@ -256,40 +273,45 @@ SignalResult::_table_ = {
   }, {{
     {::_pbi::TcParser::MiniParse, {}},
     // uint64 timestamp = 1;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(SignalResult, _impl_.timestamp_), 1>(),
-     {8, 1, 0,
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(SignalResult, _impl_.timestamp_), 2>(),
+     {8, 2, 0,
       PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.timestamp_)}},
     // float center_frequency = 2;
     {::_pbi::TcParser::FastF32S1,
-     {21, 2, 0,
+     {21, 3, 0,
       PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.center_frequency_)}},
     // int32 peak_bin_index = 3;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(SignalResult, _impl_.peak_bin_index_), 3>(),
-     {24, 3, 0,
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(SignalResult, _impl_.peak_bin_index_), 4>(),
+     {24, 4, 0,
       PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.peak_bin_index_)}},
     // float signal_strength = 4;
     {::_pbi::TcParser::FastF32S1,
-     {37, 4, 0,
+     {37, 5, 0,
       PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.signal_strength_)}},
     // string modulation = 5;
     {::_pbi::TcParser::FastUS1,
-     {42, 0, 0,
+     {42, 1, 0,
       PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.modulation_)}},
-    {::_pbi::TcParser::MiniParse, {}},
+    // repeated float spectrum_data = 6;
+    {::_pbi::TcParser::FastF32P1,
+     {50, 0, 0,
+      PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.spectrum_data_)}},
     {::_pbi::TcParser::MiniParse, {}},
   }}, {{
     65535, 65535
   }}, {{
     // uint64 timestamp = 1;
-    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.timestamp_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
+    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.timestamp_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
     // float center_frequency = 2;
-    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.center_frequency_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.center_frequency_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // int32 peak_bin_index = 3;
-    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.peak_bin_index_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.peak_bin_index_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     // float signal_strength = 4;
-    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.signal_strength_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
+    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.signal_strength_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // string modulation = 5;
-    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.modulation_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.modulation_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // repeated float spectrum_data = 6;
+    {PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.spectrum_data_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kPackedFloat)},
   }},
   // no aux_entries
   {{
@@ -306,10 +328,15 @@ PROTOBUF_NOINLINE void SignalResult::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _impl_.modulation_.ClearNonDefaultToEmpty();
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      _impl_.spectrum_data_.Clear();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      _impl_.modulation_.ClearNonDefaultToEmpty();
+    }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001eU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003cU)) {
     ::memset(&_impl_.timestamp_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.signal_strength_) -
         reinterpret_cast<char*>(&_impl_.timestamp_)) + sizeof(_impl_.signal_strength_));
@@ -338,7 +365,7 @@ PROTOBUF_NOINLINE void SignalResult::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // uint64 timestamp = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     if (this_._internal_timestamp() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteUInt64ToArray(
@@ -347,7 +374,7 @@ PROTOBUF_NOINLINE void SignalResult::Clear() {
   }
 
   // float center_frequency = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     if (::absl::bit_cast<::uint32_t>(this_._internal_center_frequency()) != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteFloatToArray(
@@ -356,7 +383,7 @@ PROTOBUF_NOINLINE void SignalResult::Clear() {
   }
 
   // int32 peak_bin_index = 3;
-  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     if (this_._internal_peak_bin_index() != 0) {
       target =
           ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
@@ -365,7 +392,7 @@ PROTOBUF_NOINLINE void SignalResult::Clear() {
   }
 
   // float signal_strength = 4;
-  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
     if (::absl::bit_cast<::uint32_t>(this_._internal_signal_strength()) != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteFloatToArray(
@@ -374,12 +401,19 @@ PROTOBUF_NOINLINE void SignalResult::Clear() {
   }
 
   // string modulation = 5;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     if (!this_._internal_modulation().empty()) {
       const ::std::string& _s = this_._internal_modulation();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "radio.SignalResult.modulation");
       target = stream->WriteStringMaybeAliased(5, _s, target);
+    }
+  }
+
+  // repeated float spectrum_data = 6;
+  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    if (this_._internal_spectrum_data_size() > 0) {
+      target = stream->WriteFixedPacked(6, this_._internal_spectrum_data(), target);
     }
   }
 
@@ -408,36 +442,46 @@ PROTOBUF_NOINLINE void SignalResult::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
+    // repeated float spectrum_data = 6;
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      ::size_t data_size = ::size_t{4} *
+          ::_pbi::FromIntSize(this_._internal_spectrum_data_size());
+      ::size_t tag_size = data_size == 0
+          ? 0
+          : 1 + ::_pbi::WireFormatLite::Int32Size(
+                              static_cast<::int32_t>(data_size));
+      total_size += tag_size + data_size;
+    }
     // string modulation = 5;
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!this_._internal_modulation().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_modulation());
       }
     }
     // uint64 timestamp = 1;
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (this_._internal_timestamp() != 0) {
         total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
             this_._internal_timestamp());
       }
     }
     // float center_frequency = 2;
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (::absl::bit_cast<::uint32_t>(this_._internal_center_frequency()) != 0) {
         total_size += 5;
       }
     }
     // int32 peak_bin_index = 3;
-    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (this_._internal_peak_bin_index() != 0) {
         total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
             this_._internal_peak_bin_index());
       }
     }
     // float signal_strength = 4;
-    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (::absl::bit_cast<::uint32_t>(this_._internal_signal_strength()) != 0) {
         total_size += 5;
       }
@@ -461,8 +505,11 @@ void SignalResult::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      _this->_internal_mutable_spectrum_data()->MergeFrom(from._internal_spectrum_data());
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_modulation().empty()) {
         _this->_internal_set_modulation(from._internal_modulation());
       } else {
@@ -471,22 +518,22 @@ void SignalResult::MergeImpl(::google::protobuf::MessageLite& to_msg,
         }
       }
     }
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (from._internal_timestamp() != 0) {
         _this->_impl_.timestamp_ = from._impl_.timestamp_;
       }
     }
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (::absl::bit_cast<::uint32_t>(from._internal_center_frequency()) != 0) {
         _this->_impl_.center_frequency_ = from._impl_.center_frequency_;
       }
     }
-    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (from._internal_peak_bin_index() != 0) {
         _this->_impl_.peak_bin_index_ = from._impl_.peak_bin_index_;
       }
     }
-    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (::absl::bit_cast<::uint32_t>(from._internal_signal_strength()) != 0) {
         _this->_impl_.signal_strength_ = from._impl_.signal_strength_;
       }
@@ -511,6 +558,7 @@ void SignalResult::InternalSwap(SignalResult* PROTOBUF_RESTRICT PROTOBUF_NONNULL
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.spectrum_data_.InternalSwap(&other->_impl_.spectrum_data_);
   ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.modulation_, &other->_impl_.modulation_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(SignalResult, _impl_.signal_strength_)
