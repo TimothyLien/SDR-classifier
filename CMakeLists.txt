@@ -3,12 +3,11 @@ project(SDR_Pro)
 
 set(CMAKE_CXX_STANDARD 17)
 
+include_directories("/opt/homebrew/include")
+include_directories(include)
+
 set(HOMEBREW_PREFIX "/opt/homebrew")
 list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_PREFIX}")
-
-include_directories(BEFORE SYSTEM ${HOMEBREW_PREFIX}/include)
-
-include_directories(include)
 
 find_package(absl CONFIG REQUIRED)
 find_package(Protobuf CONFIG REQUIRED)
@@ -24,6 +23,7 @@ target_link_libraries(SDR_App
     PRIVATE 
     ${FFTW3_LIB} 
     ${ZMQ_LIB} 
+    "/opt/homebrew/lib/librtlsdr.dylib"
     protobuf::libprotobuf 
     ${TORCH_LIBRARIES} 
     absl::base

@@ -10,6 +10,7 @@
 #include <message.pb.h>
 #include <fftw3.h>
 #include <torch/script.h>
+#include <rtl-sdr.h>
 
 // Type Alias: A "Chunk" of IQ data
 using IQBlock = std::vector<std::complex<float>>;
@@ -18,6 +19,49 @@ SafeQueue<IQBlock> q;
 std::atomic<bool> running(true);
 
 const double PI = 3.14159265358979323846;
+
+// RTL-SDR Driver Thread
+void sdr_driver() {
+    std::cout << "[SDR] Initializing Hardware..." << std::endl;
+
+    if (rtlsdr_get_device_count() == 0) {
+        std::cerr << "[SDR] Error: No dongle found!" << std::endl;
+        return;
+    }
+
+    rtlsdr_dev_t *dev = nullptr;
+    if (rtlsdr_open(&dev, 0) < 0) {
+        std::cerr << "[SDR] Error opening device." << std::endl;
+        return;
+    }
+
+    // Tune to FM Radio (98.5 MHz)
+    rtlsdr_set_center_freq(dev, 98500000); 
+    rtlsdr_set_sample_rate(dev, 1024000); 
+    rtlsdr_set_tuner_gain_mode(dev, 1);
+    rtlsdr_set_tuner_gain(dev, 250); // 25.0 dB
+    rtlsdr_reset_buffer(dev);
+
+    std::cout << "[SDR] Hardware Locked. Tuning to 98.5 MHz." << std::endl;
+
+    int n_read;
+    int buffer_size = 1024 * 2; 
+    uint8_t buffer[buffer_size]; 
+
+    while (running) {
+        if (rtlsdr_read_sync(dev, buffer, buffer_size, &n_read) < 0) break;
+
+        IQBlock block;
+        block.reserve(1024);
+        for (int i = 0; i < n_read; i += 2) {
+            float i_val = (buffer[i] - 127.5f) / 127.5f;     
+            float q_val = (buffer[i+1] - 127.5f) / 127.5f;   
+            block.push_back(std::complex<float>(i_val, q_val));
+        }
+        q.push(block);
+    }
+    rtlsdr_close(dev);
+}
 
 // Producer Thread: Simulates Radio Hardware
 void radio_producer() {
@@ -78,8 +122,16 @@ void dsp_consumer() {
     std::cout << "[Consumer] Connecting to Network (Port 5555)..." << std::endl;
     
     torch::jit::script::Module model;
-    try { model = torch::jit::load("radio_model.pt"); } 
-    catch (const c10::Error& e) { return; }
+    try { 
+        // Load the model
+        model = torch::jit::load("radio_model.pt"); 
+        std::cout << "[Consumer] AI Model Loaded Successfully." << std::endl;
+    } 
+    catch (const c10::Error& e) { 
+        std::cerr << "[Consumer] CRITICAL ERROR: Could not load 'radio_model.pt'!" << std::endl;
+        std::cerr << "Make sure the file is in the 'build' folder." << std::endl;
+        return; 
+    }
 
     int N = 1024;
     fftw_complex* in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
@@ -104,7 +156,7 @@ void dsp_consumer() {
 
         radio::SignalResult result;
         result.set_timestamp(time(NULL));
-        result.set_center_frequency(100.0);
+        result.set_center_frequency(98500000.0);
         
         result.mutable_spectrum_data()->Reserve(N);
 
@@ -158,16 +210,16 @@ void dsp_consumer() {
 int main() {
     std::cout << "[Main] Starting SDR..." << std::endl;
 
-    std::thread t1(radio_producer);
+    std::thread t1(sdr_driver);
     std::thread t2(dsp_consumer);
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::cin.get();
 
     std::cout << "[Main] Shutting down..." << std::endl;
     running = false;
 
-    t1.detach();
-    t2.detach();
+    if (t1.joinable()) t1.join();
+    if (t2.joinable()) t2.join();
 
     std::cout << "[Main] Done." << std::endl;
     return 0;
