@@ -39,3 +39,10 @@ build/
 *.csv
 
 venv/
+
+# Data files
+*.bin
+*.npy
+
+# Models
+*.pt
