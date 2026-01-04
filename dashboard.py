@@ -142,15 +142,12 @@ class MissionControl(QMainWindow):
         color = "#333"
         text_color = "#AAA"
         
-        if mod_type == "BPSK": 
-            color = "#004d00" # Dark Green
-            text_color = "#00ff00"
-        elif mod_type == "QPSK": 
-            color = "#002266" # Dark Blue
-            text_color = "#0088ff"
-        elif mod_type == "Sine_Wave": 
-            color = "#663300" # Dark Orange
-            text_color = "#ffaa00"
+        if mod_type == "Key_Fob": 
+            color = "#4b0082"      # Indigo/Purple
+            text_color = "#ff00ff" # Magenta text (High Viz)
+        elif mod_type == "FM_Signal": 
+            color = "#002266"      # Dark Blue
+            text_color = "#00ccff" # Cyan text
         elif mod_type == "Noise":
             color = "#222"
             text_color = "#555"
@@ -160,25 +157,16 @@ class MissionControl(QMainWindow):
 
         # 2. Update Stats
         # Calc real freq of peak
-        freq_hz = msg.center_frequency - (SAMPLE_RATE/2) + (msg.peak_bin_index / FFT_SIZE) * SAMPLE_RATE
-        self.stats_label.setText(f"Signal Strength: {msg.signal_strength:.1f} | Peak Freq: {freq_hz:.1f} Hz")
+        SAMPLE_RATE_REAL = 1024000 
+        freq_hz = msg.center_frequency - (SAMPLE_RATE_REAL/2) + (msg.peak_bin_index / FFT_SIZE) * SAMPLE_RATE_REAL
+        self.stats_label.setText(f"Signal Strength: {msg.signal_strength:.1f} | Peak Freq: {freq_hz/1e6:.3f} MHz")
 
         # 3. Update Waterfall
         spectrum = np.array(msg.spectrum_data)
         if len(spectrum) == FFT_SIZE:
-            # Shift Buffer
             self.waterfall_buffer = np.roll(self.waterfall_buffer, -1, axis=0)
-            
-            # Convert to dB for visualization (if not already dB)
             spectrum_db = 20 * np.log10(spectrum + 1e-9)
-            
-            # FFT Shift (Optional: puts 0Hz in center)
-            # For now, we keep it 0..Fs to match C++ output
-            
             self.waterfall_buffer[-1] = spectrum_db
-            
-            # Update Image
-            # Transpose needed because PyQtGraph expects [x, y]
             self.img_item.setImage(self.waterfall_buffer.T, autoLevels=False)
 
 if __name__ == "__main__":

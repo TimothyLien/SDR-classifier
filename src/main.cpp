@@ -190,8 +190,8 @@ void dsp_consumer() {
         
         std::string class_name = "Unknown";
         if (class_id == 0) class_name = "Noise";
-        if (class_id == 1) class_name = "Sine_Wave";
-        if (class_id == 2) class_name = "BPSK";
+        if (class_id == 1) class_name = "FM_Signal";
+        if (class_id == 2) class_name = "Key_Fob";
         
         result.set_modulation(class_name); 
 

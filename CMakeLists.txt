@@ -28,3 +28,6 @@ target_link_libraries(SDR_App
     ${TORCH_LIBRARIES} 
     absl::base
 )
+
+add_executable(capture_tool src/capture_tool.cpp)
+target_link_libraries(capture_tool "/opt/homebrew/lib/librtlsdr.dylib")

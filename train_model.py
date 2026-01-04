@@ -1,117 +1,110 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.utils.data as data
 import numpy as np
-import math
 
-NUM_SAMPLES = 2000
-BLOCK_SIZE = 1024
-EPOCHS = 100
+# Configuration
+BATCH_SIZE = 32
+EPOCHS = 10
+LEARNING_RATE = 0.001
+MODEL_PATH = "radio_model.pt"
 
-CLASSES = ["Noise", "Sine_Wave", "BPSK_Digital"]
-
-def generate_data(num_samples):
-    X = [] # Data (Signals)
-    y = [] # Labels (Answers)
-
-    print(f"[*] Generating {num_samples} synthetic signals...")
-
-    for _ in range(num_samples):
-        t = np.linspace(0, 1, BLOCK_SIZE)
-        
-        # Pick a random class
-        label_idx = np.random.randint(0, 3)
-        
-        sig_i = np.zeros(BLOCK_SIZE)
-        sig_q = np.zeros(BLOCK_SIZE)
-
-        if label_idx == 0: # NOISE
-            pass # Signal remains 0, noise added later
-
-        elif label_idx == 1: # SINE WAVE
-            freq = np.random.uniform(50, 200) # Random freq
-            sig_i = np.cos(2 * np.pi * freq * t)
-            sig_q = np.sin(2 * np.pi * freq * t)
-
-        elif label_idx == 2: # BPSK (Digital Data)
-            # BPSK flips phase by 180 degrees to send a '1' or '0'
-            freq = np.random.uniform(50, 200)
-            phase = 0
-            # Flip phase every 100 samples
-            for i in range(BLOCK_SIZE):
-                if i % 100 == 0:
-                    phase += np.pi if np.random.rand() > 0.5 else 0
-                sig_i[i] = np.cos(2 * np.pi * freq * t[i] + phase)
-                sig_q[i] = np.sin(2 * np.pi * freq * t[i] + phase)
-
-        # Add Random Gaussian Noise (The "Static")
-        noise_power = 0.5
-        sig_i += np.random.normal(0, noise_power, BLOCK_SIZE)
-        sig_q += np.random.normal(0, noise_power, BLOCK_SIZE)
-
-        # Stack into [2, 1024] format (Channel 0 = I, Channel 1 = Q)
-        data = np.vstack([sig_i, sig_q])
-        X.append(data)
-        y.append(label_idx)
-
-    # Convert to PyTorch Tensors
-    X_tensor = torch.tensor(np.array(X), dtype=torch.float32)
-    y_tensor = torch.tensor(np.array(y), dtype=torch.long)
-    return X_tensor, y_tensor
-
-# Neural Network
+# 1D Convolutional Neural Network optimized for I/Q Radio Signals
 class RadioClassifier(nn.Module):
     def __init__(self):
         super(RadioClassifier, self).__init__()
-        # Input: 2 channels (I and Q), Length 1024
-        self.conv1 = nn.Conv1d(in_channels=2, out_channels=16, kernel_size=7, padding=3)
-        self.relu = nn.ReLU()
-        self.pool = nn.MaxPool1d(kernel_size=2) # Shrinks size by half
         
-        self.conv2 = nn.Conv1d(16, 32, 7, padding=3)
-        
-        # After 2 pools, 1024 -> 512 -> 256
-        self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(32 * 256, 3) # Output: 3 Classes
+        self.features = nn.Sequential(
+            nn.Conv1d(in_channels=2, out_channels=16, kernel_size=11, stride=1, padding=5),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=2),
+            nn.Conv1d(in_channels=16, out_channels=32, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=2),
+            nn.Conv1d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.MaxPool1d(kernel_size=2),
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(64 * 128, 128),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(128, 3)
+        )
 
     def forward(self, x):
-        x = self.pool(self.relu(self.conv1(x)))
-        x = self.pool(self.relu(self.conv2(x)))
-        x = self.flatten(x)
-        x = self.fc1(x)
+        x = self.features(x)
+        x = self.classifier(x)
         return x
 
-# Training
-def main():
-    X_train, y_train = generate_data(NUM_SAMPLES)
+try:
+    x_numpy = np.load("dataset_x.npy")
+    y_numpy = np.load("dataset_y.npy")
+    print(f"Loaded {len(x_numpy)} samples.")
+except FileNotFoundError:
+    print("CRITICAL ERROR: 'dataset_x.npy' not found!")
+    print("Please run 'python3 process_data.py' first.")
+    exit()
 
-    model = RadioClassifier()
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+x_tensor = torch.from_numpy(x_numpy).float()
+y_tensor = torch.from_numpy(y_numpy).long()
 
+dataset = data.TensorDataset(x_tensor, y_tensor)
+train_size = int(0.8 * len(dataset))
+test_size = len(dataset) - train_size
+train_set, test_set = data.random_split(dataset, [train_size, test_size])
+
+train_loader = data.DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
+test_loader = data.DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
+
+print(f"Training on {len(train_set)} samples, Validating on {len(test_set)}...")
+
+model = RadioClassifier()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+for epoch in range(EPOCHS):
     model.train()
-    for epoch in range(EPOCHS):
+    running_loss = 0.0
+    correct = 0
+    total = 0
+    
+    for inputs, labels in train_loader:
         optimizer.zero_grad()
-        outputs = model(X_train)
-        loss = criterion(outputs, y_train)
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
         
-        # Calculate Accuracy
+        running_loss += loss.item()
         _, predicted = torch.max(outputs.data, 1)
-        acc = (predicted == y_train).sum().item() / NUM_SAMPLES
-        print(f"Epoch {epoch+1}/{EPOCHS} | Loss: {loss.item():.4f} | Accuracy: {acc*100:.1f}%")
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
 
-    print("Training Complete.")
+    acc = 100 * correct / total
+    print(f"Epoch {epoch+1}/{EPOCHS} | Loss: {running_loss/len(train_loader):.4f} | Acc: {acc:.2f}%")
 
-    model.eval()
-    
-    example_input = torch.rand(1, 2, BLOCK_SIZE) 
-    
-    traced_script_module = torch.jit.trace(model, example_input)
-    
-    traced_script_module.save("radio_model.pt")
-    print("[SUCCESS] Model saved as 'radio_model.pt'")
+print("\nEvaluating on Test Set...")
+model.eval()
+correct = 0
+total = 0
+with torch.no_grad():
+    for inputs, labels in test_loader:
+        outputs = model(inputs)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
 
-if __name__ == "__main__":
-    main()
+print(f"Final Test Accuracy: {100 * correct / total:.2f}%")
+
+print(f"\nExporting model to {MODEL_PATH}...")
+
+# Create a dummy input that matches the C++ input shape [1, 2, 1024]
+dummy_input = torch.randn(1, 2, 1024)
+traced_script_module = torch.jit.trace(model, dummy_input)
+traced_script_module.save(MODEL_PATH)
+
+print("Model has been saved! Copy this file to your C++ build folder:")
+print(f"  cp {MODEL_PATH} build/")
