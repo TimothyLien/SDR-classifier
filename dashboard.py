@@ -134,20 +134,26 @@ class MissionControl(QMainWindow):
         self.img_item.setLevels((0, val))
 
     def update_dashboard(self, msg):
-        # Update Axis Context (in case center freq changes)
-        self.freq_axis.center_freq_hz = msg.center_frequency
+        # [FIX] Force Axis Redraw if Frequency Changes
+        # PyQtGraph caches axis images. We must manually clear the cache (picture = None)
+        # to force it to recalculate the text labels.
+        if self.freq_axis.center_freq_hz != msg.center_frequency:
+            self.freq_axis.center_freq_hz = msg.center_frequency
+            self.freq_axis.picture = None  # <--- Clears the cached image
+            self.freq_axis.update()        # <--- Triggers a repaint
 
         # 1. Update Class Label
         mod_type = msg.modulation
+        # ... (The rest of the function remains exactly the same below) ...
         color = "#333"
         text_color = "#AAA"
         
         if mod_type == "Key_Fob": 
-            color = "#4b0082"      # Indigo/Purple
-            text_color = "#ff00ff" # Magenta text (High Viz)
+            color = "#4b0082"
+            text_color = "#ff00ff"
         elif mod_type == "FM_Signal": 
-            color = "#002266"      # Dark Blue
-            text_color = "#00ccff" # Cyan text
+            color = "#002266"
+            text_color = "#00ccff"
         elif mod_type == "Noise":
             color = "#222"
             text_color = "#555"
@@ -156,7 +162,6 @@ class MissionControl(QMainWindow):
         self.class_label.setStyleSheet(f"font-size: 32px; font-weight: bold; color: {text_color}; background-color: {color}; border-radius: 10px; padding: 10px;")
 
         # 2. Update Stats
-        # Calc real freq of peak
         SAMPLE_RATE_REAL = 1024000 
         freq_hz = msg.center_frequency - (SAMPLE_RATE_REAL/2) + (msg.peak_bin_index / FFT_SIZE) * SAMPLE_RATE_REAL
         self.stats_label.setText(f"Signal Strength: {msg.signal_strength:.1f} | Peak Freq: {freq_hz/1e6:.3f} MHz")

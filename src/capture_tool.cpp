@@ -7,6 +7,8 @@
 #include <thread>
 #include <chrono>
 
+// FM Radio = 98.5 MHz
+// KeyFob = 313.8 MHz
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cout << "Usage: ./capture_tool <filename_prefix> [frequency_hz]" << std::endl;

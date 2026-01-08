@@ -17,6 +17,7 @@ using IQBlock = std::vector<std::complex<float>>;
 
 SafeQueue<IQBlock> q;
 std::atomic<bool> running(true);
+std::atomic<uint32_t> selected_freq(98500000); // Default to 98.5 MHz
 
 const double PI = 3.14159265358979323846;
 
@@ -35,20 +36,29 @@ void sdr_driver() {
         return;
     }
 
-    // Tune to FM Radio (98.5 MHz)
-    rtlsdr_set_center_freq(dev, 98500000); 
+    // Tune to input frequency
+    uint32_t current_freq = selected_freq.load();
+    rtlsdr_set_center_freq(dev, current_freq); 
     rtlsdr_set_sample_rate(dev, 1024000); 
     rtlsdr_set_tuner_gain_mode(dev, 1);
     rtlsdr_set_tuner_gain(dev, 250); // 25.0 dB
     rtlsdr_reset_buffer(dev);
 
-    std::cout << "[SDR] Hardware Locked. Tuning to 98.5 MHz." << std::endl;
+    std::cout << "[SDR] Hardware Initially Locked at " << current_freq << " Hz." << std::endl;
 
+    // With each read, n_read will contain number of bytes read (should always be buffer_size)
     int n_read;
     int buffer_size = 1024 * 2; 
     uint8_t buffer[buffer_size]; 
 
     while (running) {
+        uint32_t target_freq = selected_freq.load();
+        if (target_freq != current_freq) {
+            rtlsdr_set_center_freq(dev, target_freq);
+            current_freq = target_freq;
+        }
+
+        // Waits until USB buffer is filled with buffer_size bytes
         if (rtlsdr_read_sync(dev, buffer, buffer_size, &n_read) < 0) break;
 
         IQBlock block;
@@ -156,7 +166,7 @@ void dsp_consumer() {
 
         radio::SignalResult result;
         result.set_timestamp(time(NULL));
-        result.set_center_frequency(98500000.0);
+        result.set_center_frequency((float)selected_freq.load());
         
         result.mutable_spectrum_data()->Reserve(N);
 
@@ -207,16 +217,34 @@ void dsp_consumer() {
     zmq_ctx_destroy(context);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc > 1){
+        selected_freq = std::atoi(argv[1]);
+    }
+
     std::cout << "[Main] Starting SDR..." << std::endl;
 
     std::thread t1(sdr_driver);
     std::thread t2(dsp_consumer);
 
-    std::cin.get();
+    std::string input;
+    while (running){
+        std::cout << "> " << std::flush;
+        std::cin >> input;
 
-    std::cout << "[Main] Shutting down..." << std::endl;
-    running = false;
+        if (input == "q" || input == "quit") {
+            running = false;
+            break;
+        }
+
+        try {
+            // Convert string to integer frequency
+            uint32_t new_freq = std::stoul(input);
+            selected_freq.store(new_freq);
+        } catch (...) {
+            std::cout << "[!] Invalid input. Enter a frequency in Hz." << std::endl;
+        }
+    }
 
     if (t1.joinable()) t1.join();
     if (t2.joinable()) t2.join();
